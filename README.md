@@ -2,5 +2,5 @@
 Ashwin R. Bharadwaj
 Hardik Gourisaria
 Hrishikesh V
-Shrinidhi
+K Shrinidhi Bhagavath
 Capstone Project
