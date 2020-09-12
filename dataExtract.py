@@ -9,6 +9,7 @@ import scipy.io
 import matplotlib.pyplot as plt
 path = 'nyu_depth_v2_labeled.mat'
 import h5py
+from tqdm import tqdm
 import numpy as np
 
 '''
@@ -29,21 +30,39 @@ with h5py.File(path, 'r') as f:
 '''
 
 
+PATH = dict()
+PATH["in"] = 'Input'
+PATH["out"] = 'Output'
+
+
+
+inData = []
+outData = []
+
 idx = 0
 with h5py.File(path, 'r') as f:
     data = f.keys()
     print(data)
-    for idx in range(2):
+    for idx in tqdm(range(int(len(f['images']))-500)):
         Z = f['depths'][idx]
         img = f['images'][idx]
         img = np.rollaxis(img,0,3)
-        labels = f['labels'][idx]
+        img = img/255.0
+        #labels = f['labels'][idx]
         M = Z.max()
         m = Z.min()
         K = 1.0-((Z-m)/(M-m))
+        inData.append(img)
+        outData.append(K)
+        '''
         plt.imshow(K)
         plt.show()
         plt.imshow(img)
         plt.show()
         plt.imshow(labels)
         plt.show()
+        '''
+    inData = np.array(inData)
+    outData = np.array(outData)
+    np.savez_compressed('input.npz',inData)
+    np.savez_compressed('output.npz',outData)
