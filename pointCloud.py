@@ -64,6 +64,21 @@ def render (depth,rgb,outputfile="sync.ply"):
     
     
     
+def meshMaker (pcd):
+    ## use ball algorithm
+    distance = pcd.compute_nearest_neighbor_distance()
+    radius = np.mean(distance)*3
+    
+    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd,o3d.utility.DoubleVector([radius, radius * 2]))
+    dec_mesh = mesh.simplify_quadric_decimation(100000)
+    dec_mesh.remove_degenerate_triangles()
+    dec_mesh.remove_duplicated_triangles()
+    dec_mesh.remove_duplicated_vertices()
+    dec_mesh.remove_non_manifold_edges()
+    return dec_mesh
+    
+    
+    
 if __name__ == '__main__':
     with h5py.File(path, 'r') as f:
         data = f.keys()
@@ -74,3 +89,4 @@ if __name__ == '__main__':
         image_print = np.rollaxis(image,0,3)
         plt.imsave(str(idx)+'.png',image_print)
         cloud,_ = render(depth,image)
+        mesh = meshMaker(cloud)
