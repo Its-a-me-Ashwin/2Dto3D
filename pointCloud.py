@@ -66,6 +66,7 @@ def render (depth,rgb,outputfile="sync.ply"):
     
 def meshMaker (pcd):
     ## use ball algorithm
+    pcd.estimate_normals()
     distance = pcd.compute_nearest_neighbor_distance()
     radius = np.mean(distance)*3
     
@@ -75,6 +76,7 @@ def meshMaker (pcd):
     dec_mesh.remove_duplicated_triangles()
     dec_mesh.remove_duplicated_vertices()
     dec_mesh.remove_non_manifold_edges()
+    o3d.visualization.draw_geometries([mesh])
     return dec_mesh
     
     
@@ -82,7 +84,7 @@ def meshMaker (pcd):
 if __name__ == '__main__':
     with h5py.File(path, 'r') as f:
         data = f.keys()
-        print(data)
+        #print(data)
         idx=420
         depth = f['depths'][idx]
         image = f['images'][idx]
@@ -90,3 +92,4 @@ if __name__ == '__main__':
         plt.imsave(str(idx)+'.png',image_print)
         cloud,_ = render(depth,image)
         mesh = meshMaker(cloud)
+        #print(mesh)
