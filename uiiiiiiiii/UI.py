@@ -4,6 +4,10 @@ Created on Tue Dec  1 21:58:13 2020
 
 @author: 91948
 """
+
+
+
+# import modules
 from tkinter import *
 import os
 import tkinter.messagebox
@@ -20,15 +24,18 @@ from keras.models import load_model
 from layers import BilinearUpSampling2D
 from utils import predict, load_images, display_images
 
+
+# calculate MSE
 def rmse(y_true, y_pred):
 	  return backend.sqrt(backend.mean(backend.square(y_pred - y_true), axis=-1))
 
 
+# calculate MSE
 def rmse2(y_true, y_pred):
 	  return backend.sqrt(backend.mean(backend.square(y_pred - y_true), axis=-1)) + tf.keras.losses.MAE(y_true, y_pred)
 
 
-
+# custom loss function for depth map
 def berhu_loss(labels, predictions, scope=None):
     if labels is None:
         raise ValueError("labels must not be None.")
@@ -56,10 +63,13 @@ def berhu_loss(labels, predictions, scope=None):
     loss = tf.reduce_sum(berHu_loss)
 
     return loss
-
+# load the model
 custom_objects = {'BilinearUpSampling2D': BilinearUpSampling2D, 'depth_loss_function': None}
 #model = load_model("nyu.h5",  custom_objects=custom_objects, compile=False 'rmse':rmse})
 model = load_model('nyu.h5', custom_objects=custom_objects, compile=False)
+
+
+# main UI class
 class ImageWindow:
     def __init__(self, master):
 
@@ -105,6 +115,7 @@ class ImageWindow:
         #self.welctext.place(relx=0.2, rely=0.1)
         
     def prev_buttons(self):
+	#go back to home screen
         self.background_canvas.delete(self.image)
         self.next_button2.place_forget()
         self.new_image.place_forget()
@@ -123,23 +134,25 @@ class ImageWindow:
         pass
     
     def close_window(self):
+	# close the window
         self.master.destroy
         exit(0)
     
     def gen_point_cloud(self):
+	# generate point cloud using open3d
+	# disable the buttons
         self.background_canvas.delete(self.image)
         self.next_button2.place_forget()
         self.new_image.place_forget()
         self.close_button.place_forget()
         self.prediction_label.place_forget()
+	# draw the point cloud
         draw(self.points)
+	# re enable the buttons
         self.analyse_image_button.config(state=ACTIVE)
         self.browse_button.config(state=ACTIVE)
         self.background_image=ImageTk.PhotoImage(file="head.png",format="png",master=self.master)
         self.image=self.background_canvas.create_image(540,200,image=self.background_image, anchor=CENTER, tags="background")
-        
-        # gay stuff
-
         # welcometext
         #self.welctext=Label(self.background_canvas, fg="brown", bg="cornsilk2", font=("Courier", 40), text="lol is lol" )
         
@@ -152,12 +165,14 @@ class ImageWindow:
         self.analyse_image_button.place(relx=0.8, rely=0.9)
     
     def browsefunc(self):
+	# set up UI to browse for directory
         self.browser = tkinter.filedialog.askdirectory(initialdir = "/",title = "Select folder")
         self.location_entry.delete(0,END)
         self.location_entry.insert(0,self.browser)
         #print(self.browser)
 
     def next_buttons(self):
+	# button to prcess the data
         path = self.location_entry.get()
         if not os.path.isdir(path):
             tkinter.messagebox.showinfo("Invalid directory.","Please enter a valid file path.")
@@ -231,6 +246,7 @@ class ImageWindow:
         
     
     def clean_predictions(self, predict_array):
+	# clean the entire window
         s=[]
         for entry in predict_array:
             curr=""
@@ -244,6 +260,7 @@ class ImageWindow:
         #print("here:",s)
         return "\n".join(s)
 
+# start the UI
 root=Tk()
 root.resizable(False, False)
 gui=ImageWindow(root)
