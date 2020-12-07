@@ -188,7 +188,7 @@ def create_xyz(img, dpt, edg, k = 2):
 '''
 def render (depth,rgb,axis=True,draw=False):
     '''
-        Render test points from NYU dataset
+        Build the point cloud data structure to be rendered
     '''
     kinectX = 53 # X view angle 53
     kinectY = 43 # Y view angle 43
@@ -228,6 +228,9 @@ def render (depth,rgb,axis=True,draw=False):
     
 
 def draw(objects,axis = False):
+    '''
+        Use the point cloud data structure and display the point cloud
+    '''
     pointCloud = list()
     for idx in range(len(objects)):
         pcd0 = o3d.geometry.PointCloud()
@@ -289,8 +292,7 @@ def load(axis=True):
     
 def makeMatrix (angleX=60,angleY=60,shape=(480,640)): 
     '''
-        Constant Matrix
-        Set 60,60 for model
+        Buuld the offset matrix to accomodate different models
     '''
     kinectX = angleX#60 # X view angle 53
     kinectY = angleY#60 # Y view angle 43
@@ -309,7 +311,7 @@ def makeMatrix (angleX=60,angleY=60,shape=(480,640)):
 
 def fixRes(cameraAngles,cameraResolution):
     '''
-        Fix resolution and angle distortions
+        Generate the matrix to accomodate the all cameras
     '''
     # default model
     modelSpecific = makeMatrix()
@@ -343,6 +345,9 @@ def project (model,imgs,angles,cameraAngles=(53,43), cameraResolution=(480,640))
 
 
 def predictNN(images, model,show=False):
+    '''
+        Using the NN predict the depth map using the images
+    '''
     imgs = list()
     shapes = list()
     for im in images:
@@ -373,10 +378,9 @@ def work (model,images,offsets):
         DESCRIPTION.
     offsets : [(xT,yT,zT,xR,yR,zR),....11] radians and meters
         DESCRIPTION.
-
+            Using offsets and images to gebnerate the point cloud for all images of a perticular scene
     Returns
     -------
-    yo mama
     '''
     depths = predictNN(images,model)
     objects = list()
@@ -407,6 +411,9 @@ def work (model,images,offsets):
                 
     
 def readFolder(path, model,resize=True):
+    '''
+        function for UI
+    '''
     f = open(os.path.join(path,'offsets.json'),'r') 
     data = json.load(f)
     f.close()
