@@ -114,6 +114,7 @@ def makeCoordinates (depth,rgb,dim=(256,256)):
     return cloud
 
 
+# constants made for conversions
 FX = 5.8262448167737955e+02
 FY = 5.8269103270988637e+02
 CX = 3.1304475870804731e+02
@@ -186,6 +187,8 @@ def create_xyz(img, dpt, edg, k = 2):
 
     return cloud, color
 '''
+
+
 def render (depth,rgb,axis=True,draw=False):
     '''
         Build the point cloud data structure to be rendered
@@ -200,8 +203,10 @@ def render (depth,rgb,axis=True,draw=False):
     yCenter = depth.shape[1]//2
     cloud = np.zeros((depth.shape[0]*depth.shape[1],3))
     colors = np.zeros((depth.shape[0]*depth.shape[1],3))
+    # sets up parameters
     if rgb.shape[0] == 3:
         rgb = np.rollaxis(rgb,0,3)
+    # generate the point cloud and apply the color
     for i in range(depth.shape[0]):
         for j in range(depth.shape[1]):
             cloud[i*depth.shape[1]+j][0] = depth[i][j]/math.tan(horizAlpha + (i*horizAngle)/depth.shape[0]) # X ordinate
@@ -212,6 +217,7 @@ def render (depth,rgb,axis=True,draw=False):
     Y = cloud[:,1]
     Z = cloud[:,2]
     xyz = np.dstack((X,Y,Z))[0]
+    # draw the 3d point cloud 
     if draw:
         pcd0 = o3d.geometry.PointCloud()
         pcd0.points = o3d.utility.Vector3dVector(xyz*2)
@@ -237,6 +243,7 @@ def draw(objects,axis = False):
         pcd0.points = o3d.utility.Vector3dVector(objects[idx]['points'])
         pcd0.colors = o3d.utility.Vector3dVector(objects[idx]['colors'])
         pointCloud.append(pcd0)
+    # draw the axis if needed for scaling
     if axis:
         c = makeAxis()
         pcd1 = o3d.geometry.PointCloud()
@@ -276,6 +283,7 @@ def load(axis=True):
         plt.imshow(imgA)
         plt.show()
         pointCloud = []
+        # draw the axis
         if axis:
             c = makeAxis()
             pcd1 = o3d.geometry.PointCloud()
@@ -321,11 +329,16 @@ def fixRes(cameraAngles,cameraResolution):
 
     
 def project (model,imgs,angles,cameraAngles=(53,43), cameraResolution=(480,640)):
+    '''
+        generates the depth map using NN
+        uses the generated depth map to generate the point cloud
+    '''
     offsets = fixRes(cameraAngles, cameraResolution)
     imgs = imgs/255.0
     imgs = (imgs-0.5)*2.0
     predictions = model.predict(imgs)
     pcds = list()
+    # build the point cloud structure for all the depth maps and images 
     for idx in range(len(imgs)):
         temp = cv2.resize(predictions[idx],(640,480))
         temp[:,:,0] = temp[:,:,0]*offsets[:,:,0]
@@ -386,6 +399,7 @@ def work (model,images,offsets):
     objects = list()
     n_images = len(images)
     c = 0
+    # use the point cloud generated to buiild the entire point cloud
     for image,depth,offset in zip(images,depths,offsets):
         #print(image.shape, depth.shape)
         points,colors = render(depth,image)
@@ -396,6 +410,7 @@ def work (model,images,offsets):
         plt.title('depth')
         plt.imshow(depth)
         
+        # apply the rotations and translations matrices
         points[:,2] = points[:,2] - points[:,2].mean()
         points = rotate(offset[3],offset[4],offset[5],points)
         points = translate(offset[0],offset[1],offset[2],points)
@@ -414,6 +429,7 @@ def readFolder(path, model,resize=True):
     '''
         function for UI
     '''
+    # a wrapper function to make easly test on the test cases
     f = open(os.path.join(path,'offsets.json'),'r') 
     data = json.load(f)
     f.close()
