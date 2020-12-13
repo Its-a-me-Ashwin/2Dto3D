@@ -1,8 +1,11 @@
 # Main Script
 
 ## Model
- * The model is large and thus wp=ont fit on github
- * Change the model input/output dimensions of the image
+ * The model weights size is very large and hence it has not been uploaded.
+ * Change the model input/output dimensions of the image.
+
+## Dataset
+ * NYU Depth v2 Dataset has been used to train the model but has not bee uploaded here due to it very large size (140 GB).
 
 ## To run:
   ### To train the code
@@ -15,7 +18,5 @@
   ###
    $ python UI.py
    
-   * You must have the model downloaded or finished training(500MB)
+   * You must have the model downloaded or must have finished training.
    * You can provide some of the test cases available or you can make your own test cases.
-   
-   
