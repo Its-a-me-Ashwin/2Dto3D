@@ -40,7 +40,7 @@ def translatePoint(x,y,z):
         [0,1,0,0],
         [0,0,1,0],
         [x,y,z,1],
-        ],dtype=np.float64)
+        ])
     return translationMatrix
 
 def translate(x,y,z,points):
@@ -98,34 +98,6 @@ def camera2canvas(camStuff):
     return coordWRTC    
 
 
-# specific for camera
-# call only once and use its output everywhere
-def pixle2camera (camStuff,coordWRTC,points):
-    out = list()
-    for i in points:
-        out.append(coordWRTC[i[0]*camStuff["res"][1] + i[1]])
-    out = np.array(out)
-    return out
-
-
-def pixle2real (camStuff,coordWRTC,location,points):
-    out = pixle2camera(camStuff, coordWRTC, points)
-    out = rotate(location[3],location[4],location[5],out)
-    out = translate(location[0],location[1],location[2],out)
-    return out
-
-
-
-def getCorespondingPoints(img1,img2,location1,location2,coordWRTC,camStuff):
-    E = makeEsentialMatrix(location1,location2)
-    for x in range(img1.shape[0]):
-        for y in range(img1.shape[1]):
-            # (x,y) pixles coordinates
-            realCoords1 = pixle2real(camStuff,coordWRTC,location1,np.array([x,y]))
-            realCoords2 = np.matmul(realCoords1,E)
-            # if realCoords2 is in coordWRTC2
-            
-
 
 p1 = '1.jpg'
 p2 = '2.jpg'
@@ -137,17 +109,17 @@ img2 = cv2.imread(p2,0)
 coordWRTC = camera2canvas(camDict)
 
 # get camera position
-#getCameraPosition(image,expectedId,frame=None,marker_size = marker_size):
-ret1 = getCameraPosition(img1,6,frame=img1,marker_size=9.5)
-ret2 = getCameraPosition(img2,6,frame=img2,marker_size=9.5)
+ret1 = getCameraPosition(img1,6,13.5)
+ret2 = getCameraPosition(img2,6,13.5)
 
 # get Essential Matrix
-E = makeEsentialMatrix(ret1,ret2)
+#E = makeEsentialMatrix(ret1,ret2)
 
 # get projected coordinates
 
 coordWRTC1 = rotate(ret1[3],ret1[4],ret1[5],coordWRTC)
 coordWRTC1 = translate(ret1[0],ret1[1],ret1[2],coordWRTC)
+
 
 coordWRTC2 = rotate(ret2[3],ret2[4],ret2[5],coordWRTC)
 coordWRTC2 = translate(ret2[0],ret2[1],ret2[2],coordWRTC)

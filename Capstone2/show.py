@@ -24,7 +24,7 @@ def rotatePoint(x,y,z):
         [cos(x)*cos(y),cos(x)*sin(y)*sin(z)-sin(x)*cos(z),cos(x)*sin(y)*cos(z)+sin(x)*sin(z)],
         [sin(x)*cos(y),sin(x)*sin(y)*sin(z)+cos(x)*cos(z),sin(x)*sin(y)*cos(z)-cos(x)*sin(z)],
         [-sin(y),cos(y)*sin(z),cos(y)*cos(z)]
-    ],dtype=np.float64)
+    ])
     return rotations
 
 def rotate(x,y,z,points):
@@ -64,7 +64,7 @@ def makeBox (x,y,z,r,p,ya,scale=10):
         coordinates.append([x,y,-i])
         coordinates.append([x-i,y,z])
         coordinates.append([x,y-i,z])
-    coordinates = np.array(coordinates,dtype=np.float64)
+    coordinates = np.array(coordinates)
     coordinates = rotate(r,p,ya,coordinates)    
     return coordinates
 
@@ -93,11 +93,10 @@ p2 = '2.jpg'
 img1 = cv2.imread(p1,0)
 img2 = cv2.imread(p2,0)
 
-ret1 = getCameraPosition(img1,6,frame=img1,marker_size=9.5)
-ret2 = getCameraPosition(img2,6,frame=img2,marker_size=9.5)
 
-#ret1 = getCameraPosition(img1,6,13.5)
-#ret2 = getCameraPosition(img2,6,13.5)
+
+ret1 = getCameraPosition(img1,6,13.5)
+ret2 = getCameraPosition(img2,6,13.5)
 
 c1 = makeBox(ret1[0],ret1[1],ret1[2],ret1[3],ret1[4],ret1[5])
 c2 = makeBox(ret2[0],ret2[1],ret2[2],ret2[3],ret2[4],ret2[5])

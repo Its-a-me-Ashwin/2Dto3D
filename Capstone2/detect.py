@@ -5,7 +5,7 @@ import time,math,sys
 from math import sqrt
 
 expectedId = 6
-marker_size = 9.5#13.5 # real measurements (cm)
+marker_size = 13.5 # real measurements (meters)
 
 
 # rotate matrix
@@ -64,9 +64,9 @@ def getCameraPosition(image,expectedId,frame=None,marker_size = marker_size):
         ret = aruco.estimatePoseSingleMarkers(corners,marker_size,cam,dist)
 
         rvec,tvec = ret[0][0,0,:],ret[1][0,0,:]     
-        #if frame != None:
-        aruco.drawDetectedMarkers(frame,corners)
-        aruco.drawAxis(frame,cam,dist,rvec,tvec,marker_size//2)
+        if True:
+            aruco.drawDetectedMarkers(frame,corners)
+            aruco.drawAxis(frame,cam,dist,rvec,tvec,marker_size//2)
 
         R_ct = np.matrix(cv2.Rodrigues(rvec)[0])
         R_tc = R_ct.T
@@ -86,7 +86,7 @@ def getCameraPosition(image,expectedId,frame=None,marker_size = marker_size):
         return (pos_camera[0],pos_camera[1],pos_camera[2],
                 roll,pitch,yaw)
     else:
-        #print("No markers found!")
+        print("No markers found!")
         return None
 
 if __name__ == '__main__':
