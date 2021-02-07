@@ -137,14 +137,28 @@ class ArucoSingleTracker():
                             parameters=self._parameters,
                             cameraMatrix=self._camera_matrix, 
                             distCoeff=self._camera_distortion)
-        #print(ids)
+        #print(corners)
         if not ids is None and self.id_to_find in ids[0]:
             found = True
             ret = aruco.estimatePoseSingleMarkers(corners, self.marker_size, self._camera_matrix, self._camera_distortion)
 
             #-- Unpack the output, get only the first
             rvec, tvec = ret[0][0,0,:], ret[1][0,0,:]
-            
+
+            # get position on plane
+            #corner = corners[ids.index(self.id_to_find)]
+            corner = corners[0]
+            centerX = 0
+            centerY = 0
+            for x,y in corner[0]:
+                centerX += x
+                centerY += y
+            centerX /= 4
+            centerY /= 4
+
+            centerX = int(centerX)
+            centerY = int(centerY)
+
             x = tvec[0]
             y = tvec[1]
             z = tvec[2]
@@ -171,6 +185,9 @@ class ArucoSingleTracker():
                         [
                             pos_camera[0], pos_camera[1], pos_camera[2],# x,y,z  0,0,0
                             roll_camera, pitch_camera, yaw_camera # Camera WRT Marker
+                        ],
+                        [
+                            (centerX,centerY)
                         ]
                 )
         else:
