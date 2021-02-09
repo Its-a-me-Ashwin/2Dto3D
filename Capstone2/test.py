@@ -34,30 +34,29 @@ data2 = aruco_tracker.trackImage(img2)
 
 
 print("Image 1",data1)
-#print("Image 2",data2)
+print("Image 2",data2)
 
 
 projection1,colors1 = projectImage(image=img1)
-#projection2,colors2 = projectImage(image=img2)
+projection2,colors2 = projectImage(image=img2)
 
+
+projection1 = rotate(data1[1][5],data1[1][4],data1[1][3],projection1)
+#print(data1[1][3],data1[1][4],data1[1][5])
+projection2 = rotate(data2[1][5],data2[1][4],data2[1][3],projection2)
+print("Roatatiin done")
 
 projection1 = translate(data1[1][0],data1[1][1],data1[1][2],projection1)
-#projection2 = translate(data2[1][0],data2[1][1],data2[1][2],projection2)
-
+projection2 = translate(data2[1][0],data2[1][1],data2[1][2],projection2)
 print("Trasnlatong done")
 
-projection1 = rotate(-data1[1][3],-data1[1][4],-data1[1][5],projection1)
-#print(data1[1][3],data1[1][4],data1[1][5])
-#projection2 = rotate(-data2[1][3],data2[1][4],data2[1][5],projection2)
-
-print("Roatatiin done")
 pcd1 = o3d.geometry.PointCloud()
 pcd1.points = o3d.utility.Vector3dVector(projection1)
 pcd1.colors = o3d.utility.Vector3dVector(colors1)
 
-#pcd2 = o3d.geometry.PointCloud()
-#pcd2.points = o3d.utility.Vector3dVector(projection2)
-#pcd2.colors = o3d.utility.Vector3dVector(colors2)
+pcd2 = o3d.geometry.PointCloud()
+pcd2.points = o3d.utility.Vector3dVector(projection2)
+pcd2.colors = o3d.utility.Vector3dVector(colors2)
 
 
 d1 = list()
@@ -66,17 +65,17 @@ d1.append(float(data1[1][1]))
 d1.append(float(data1[1][2]))
 
 
-#d2 = list()
-#d2.append(float(data2[1][0]))
-#d2.append(float(data2[1][1]))
-#d2.append(float(data2[1][2]))
+d2 = list()
+d2.append(float(data2[1][0]))
+d2.append(float(data2[1][1]))
+d2.append(float(data2[1][2]))
 
 #print(d1)
 line1 = makeLine(d1,[0,0,0])
-#line2 = makeLine(d2,[0,0,0])
+line2 = makeLine(d2,[0,0,0])
 
 #print(line1)
-draw(objects=[line1],others = [pcd1])
+draw(objects=[line1,line2],others = [pcd1,pcd2])
 
 
 if False:
