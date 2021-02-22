@@ -7,14 +7,14 @@ import os
 from math import pi,sqrt,acos
 
 
-img1 = cv2.imread('./inputs/test6/_DSC0294.JPG')
-img2 = cv2.imread('./inputs/test6/_DSC0295.JPG')
+img1 = cv2.imread('5.jpg')
+img2 = cv2.imread('6.jpg')
 
 #print(img1,img2)
 
 #print(img1.shape)
-img1 = cv2.resize(img1,(4496,3000))
-img2 = cv2.resize(img2,(4496,3000))
+img1 = cv2.resize(img1,(640,480))
+img2 = cv2.resize(img2,(640,480))
 
 gray1 = cv2.cvtColor(img1,cv2.COLOR_BGR2GRAY)
 gray2 = cv2.cvtColor(img2,cv2.COLOR_BGR2GRAY)
@@ -40,6 +40,8 @@ data2 = aruco_tracker.trackImage(img2)
 print("Image 1",data1)
 print("Image 2",data2)
 
+
+'''
 def absa(l):
     s = 0
     for i in l:
@@ -52,18 +54,27 @@ x = np.dot(data1[0][:3],data2[0][:3])/(absa(data2[0][:3])*absa(data1[0][:3]))
 print(x)
 print(acos(x)*(180/pi))
 print(rotateMatrix(data1[0][3],data1[0][4],data1[0][5]))
+'''
+
+
+#print(img1.shape)
+
 
 projection1,colors1 = projectImage(image=img1)
 projection2,colors2 = projectImage(image=img2)
 
 
-projection1 = rotate(data1[1][3],data1[1][4],data1[1][5]+pi,projection1)
-projection2 = rotate(data2[1][3],data2[1][4],data2[1][5]+pi,projection2)
+projection1 = rotate(-data1[1][3],data1[1][4]+pi,data1[1][5],projection1)
+projection2 = rotate(-data2[1][3],data2[1][4]+pi,data2[1][5],projection2)
 print("Roatatiin done")
 
 projection1 = translate(data1[1][0],data1[1][1],data1[1][2],projection1)
 projection2 = translate(data2[1][0],data2[1][1],data2[1][2],projection2)
 print("Trasnlatong done")
+
+
+#projection1 = rotate(0,pi,0,projection1)
+#projection2 = rotate(0,pi,0,projection2)
 
 pcd1 = o3d.geometry.PointCloud()
 pcd1.points = o3d.utility.Vector3dVector(projection1)
@@ -104,7 +115,7 @@ if False:
                 print(i,f)
 
 
-if True:
+if False:
     cap = cv2.VideoCapture(0)
     while(True):
         # Capture frame-by-frame

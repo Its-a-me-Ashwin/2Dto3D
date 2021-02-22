@@ -3,10 +3,13 @@ import open3d as o3d
 from math import sin,cos,tan
 
 camDict = {
-           "f" : 4.8,
+           "f" : 48,
            "view":(57,43),
-           "res" : (4496,3000)
+           "res" : (640,480)
             }
+
+
+print("Cam properties",camDict)
 
 def makeAxis(scale=50):
     '''
@@ -26,29 +29,33 @@ def makeAxis(scale=50):
 
 def makeLine (p1,p2,steps=50):
     # this works but i did gay shit here
+    # evedently it doesnt 
     try:
         if p1[0] < p2[0]:
             x = np.arange(p1[0],p2[0],abs(p2[0]-p1[0])/steps)
         else:
             x = np.arange(p1[0],p2[0],-abs(p2[0]-p1[0])/steps)
     except:
-        x = np.array([0]*50)
+        x = np.array([0]*steps)
     try:
         if p1[1] < p2[1]:
             y = np.arange(p1[1],p2[1],abs(p2[1]-p1[1])/steps)
         else:
             y = np.arange(p1[1],p2[1],-abs(p2[1]-p1[1])/steps)
     except:
-        y = np.array([0]*50)
+        y = np.array([0]*steps)
     try:
         if p1[2] < p2[2]:
             z = np.arange(p1[2],p2[2],abs(p2[2]-p1[2])/steps)
         else:
             z = np.arange(p1[2],p2[2],-abs(p2[2]-p1[2])/steps)
     except:
-        z = np.array([0]*50)
-    return np.column_stack((x,y,z))
-
+        z = np.array([0]*steps)
+    try:
+        return np.column_stack((x,y,z))
+    except ValueError:
+        smol = min([len(x),len(y),len(z)])
+        return np.column_stack([x[:smol],y[:smol],z[:smol]])
 
 def projectImage(camStuff = camDict,image = None):
     xAngleRange = np.arange(-camStuff["view"][0]/2,camStuff["view"][0]/2,
