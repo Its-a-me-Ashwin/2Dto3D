@@ -72,9 +72,8 @@ def getCameraPosition(image,expectedId,frame=None,marker_size = marker_size):
         R_tc = R_ct.T
 
         #roll,pitch,yaw = rotationMatrixToEulerAngles(R_flip*R_tc)
-        
         #print("X=%4.3f Y=%4.3f Z=%4.3f Roll=%4.3f Pitch=%4.3f Yaw=%4.3f"%(tvec[0],tvec[1],tvec[2],roll*(180/3.14),pitch*(180/3.14),yaw*(180/3.14)))
-
+        #return (tvec[0],tvec[1],tvec[2],roll,pitch,yaw)
 
 
         # get camera position wrt to marker
@@ -88,6 +87,33 @@ def getCameraPosition(image,expectedId,frame=None,marker_size = marker_size):
     else:
         print("No markers found!")
         return None
+
+def detect_markers(img):
+        markerLength = 100
+        aruco_list = []
+        camera_matrix,dist_coeff = getCameraMatrix()
+	######################## INSERT CODE HERE ########################
+        j=0
+        aruco_dict=aruco.Dictionary_get(aruco.DICT_5X5_250)
+        parameters=aruco.DetectorParameters_create()
+        #img_gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+        corners,ids,_=aruco.detectMarkers(img,aruco_dict,parameters=parameters)
+        for i in corners:
+                id_cur=ids[j]
+                j+=1
+                rvec, tvec, _= aruco.estimatePoseSingleMarkers(i,100,camera_matrix,dist_coeff)
+                centerX=0
+                centerY=0
+                for x,y in i[0]:
+                        centerX+=x
+                        centerY+=y
+                centerX/=4
+                centerY/=4
+                aruco_list.append((id_cur,(centerX,centerY),rvec,tvec))
+                #print (aruco_list)
+	##################################################################
+        return aruco_list
+
 
 if __name__ == '__main__':
     cap = cv2.VideoCapture(0)

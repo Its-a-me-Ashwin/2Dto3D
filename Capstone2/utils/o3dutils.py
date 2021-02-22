@@ -3,9 +3,9 @@ import open3d as o3d
 from math import sin,cos,tan
 
 camDict = {
-           "f" : 22,
+           "f" : 4.8,
            "view":(57,43),
-           "res" : (640,480)
+           "res" : (4496,3000)
             }
 
 def makeAxis(scale=50):

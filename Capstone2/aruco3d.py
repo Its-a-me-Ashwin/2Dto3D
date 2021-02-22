@@ -1,10 +1,13 @@
 import open3d as o3d
 import numpy as np
 import numpy as np
-from math import sqrt, sin, cos, tan, atan
-from detect import getCameraPosition
+from math import sqrt,sin,cos,tan
+from detect import getCameraPosition,detect_markers
 from matplotlib import pyplot as plt
 import cv2
+#from parallax import makeEsentialMatrix
+
+
 
 pi = 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
 
@@ -87,47 +90,47 @@ def urotate(x, y, z, points):
     return convertedPoints
 
 
-def translatePoint(x, y, z):
+
+def translatePoint(x,y,z):
     '''
         Makes the translation matrix
     '''
     translationMatrix = np.array([
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [x, y, z, 1],
-    ])
+        [1,0,0,0],
+        [0,1,0,0],
+        [0,0,1,0],
+        [x,y,z,1],
+        ])
     return translationMatrix
 
-
-def translate(x, y, z, points):
+def translate(x,y,z,points):
     '''
         translate a given set of points about x,y,z axis
     '''
-    translationMatrix = translatePoint(x, y, z)
-    out = list(map(lambda point: np.matmul(np.append(point, [1.0]), translationMatrix)[:-1], points))
+    translationMatrix = translatePoint(x,y,z)
+    out = list(map(lambda point:np.matmul(np.append(point,[1.0]),translationMatrix)[:-1],points))
     out = np.array(out)
     return out
-
 
 def makeAxis(scale=50):
     '''
         Makes the coordinates for the axis
     '''
     coordinates = []
-    test = np.arange(0.0, scale, 0.25)
+    test = np.arange(0.0,scale,0.25)
     for i in test:
-        coordinates.append([0.0, 0.0, i])
-        coordinates.append([i, 0.0, 0.0])
-        coordinates.append([0.0, i, 0.0])
-        coordinates.append([0.0, 0.0, -i])
-        coordinates.append([-i, 0.0, 0.0])
-        coordinates.append([0.0, -i, 0.0])
-    coordinates = np.array(coordinates)
+        coordinates.append([0.0,0.0,i])
+        coordinates.append([i,0.0,0.0])
+        coordinates.append([0.0,i,0.0])
+        coordinates.append([0.0,0.0,-i])
+        coordinates.append([-i,0.0,0.0])
+        coordinates.append([0.0,-i,0.0])
+    coordinates = np.array(coordinates)    
     return coordinates
 
 
-def draw(objects=None, others=None, axis=True):
+
+def draw(objects = None,others=None,axis = True):
     pointCloud = list()
     if object != None:
         for idx in range(len(objects)):
@@ -138,7 +141,7 @@ def draw(objects=None, others=None, axis=True):
         c = makeAxis()
         pcd1 = o3d.geometry.PointCloud()
         pcd1.points = o3d.utility.Vector3dVector(c)
-
+        
         pointCloud.append(pcd1)
     print(pointCloud)
     if others != None:
@@ -146,14 +149,36 @@ def draw(objects=None, others=None, axis=True):
     o3d.visualization.draw_geometries(pointCloud)
 
 
-img1 = cv2.imread('5.jpg')
-img2 = cv2.imread('6.jpg')
 
-gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+def makeEsentialMatrix(R, t):
+    T = np.array(
+        [
+            [0.0,-t[2],t[1]],
+            [t[2],0.0,-t[0]],
+            [-t[1],t[0],0.0]
+        ])
+    if not (np.all(abs(np.matmul(R,np.transpose(R))-np.identity(3,dtype=R.dtype))<1e-6)):
+        print("Error")
+        return
+    return np.matmul(R,T)
 
-p1 = getCameraPosition(gray1, 6, frame=img1, marker_size=9.5)
-p2 = getCameraPosition(gray2, 6, frame=img2, marker_size=9.5)
+img1 = cv2.imread('1.jpg')
+img2 = cv2.imread('2.jpg')
+
+#print(img1.shape)
+img1 = cv2.resize(img1,(640,480))
+img2 = cv2.resize(img2,(640,480))
+
+gray1 = cv2.cvtColor(img1,cv2.COLOR_BGR2GRAY)
+gray2 = cv2.cvtColor(img2,cv2.COLOR_BGR2GRAY)
+
+p1 = getCameraPosition(gray1,6,frame=img1,marker_size=9.5)
+p2 = getCameraPosition(gray2,6,frame=img2,marker_size=9.5)
+
+
+cp1 = detect_markers(gray1)
+cp2 = detect_markers(gray2)
+
 
 '''
 plt.imshow(img1)
@@ -164,95 +189,92 @@ plt.show()
 '''
 
 camDict = {
-    "f": 2.2,
-    "view": (57, 43),
-    "res": (640, 480)
-}
+           "f" : 2.2,
+           "view":(57,43),
+           "res" : (640,480)
+            }
 
-
-# There is no cock like horse cock ///♫♫♫♫♫♫♫♫♫♫♫♫♫♫
-# Send your asshole into shock /// ♫♫♫♫♫♫♫
+#There is no cock like horse cock ///♫♫♫♫♫♫♫♫♫♫♫♫♫♫
+#Send your asshole into shock /// ♫♫♫♫♫♫♫
 
 
 def camera2canvas(camStuff):
-    xAngleRange = np.arange(-camStuff["view"][0] / 2, camStuff["view"][0] / 2,
-                            camStuff["view"][0] / camStuff["res"][0])
-    yAngleRange = np.arange(-camStuff["view"][1] / 2, camStuff["view"][1] / 2,
-                            camStuff["view"][1] / camStuff["res"][1])
-    xAngleRange = xAngleRange * (3.1415 / 180)
-    yAngleRange = yAngleRange * (3.1415 / 180)
-    coordWRTC = np.zeros((camStuff["res"][0] * camStuff["res"][1], 3))
+    xAngleRange = np.arange(-camStuff["view"][0]/2,camStuff["view"][0]/2,
+                    camStuff["view"][0]/camStuff["res"][0])
+    yAngleRange = np.arange(-camStuff["view"][1]/2,camStuff["view"][1]/2,
+                    camStuff["view"][1]/camStuff["res"][1])
+    xAngleRange = xAngleRange * (3.1415/180)
+    yAngleRange = yAngleRange * (3.1415/180)
+    coordWRTC = np.zeros((camStuff["res"][0]*camStuff["res"][1],3))
     for i in range(camStuff["res"][0]):
         for j in range(camStuff["res"][1]):
-            coordWRTC[i * camStuff["res"][1] + j] = np.array([
-                camStuff["f"] * tan(xAngleRange[i]),
-                camStuff["f"] * tan(xAngleRange[j]),
+            coordWRTC[i*camStuff["res"][1]+j] = np.array([
+                camStuff["f"]*tan(xAngleRange[i]),
+                camStuff["f"]*tan(yAngleRange[j]),
                 -camStuff["f"]
-            ])
-    return coordWRTC
+                ])
+    return coordWRTC  
 
 
-def ThreeDPixelsToPoints(camStuff, pixels, R, t):
-    """
-
-    for x,y in img1:
-        x,y,z -> x1,y1,z1
-
-    """
-    points = []
-    for x, y in pixels:
-        alpha = (x - camStuff["res"][0]/2) * (camStuff["view"][0] * (pi / 180) / camStuff["res"][0])
-        beta = (y - camStuff["res"][1]/2) * (camStuff["view"][1] * (pi / 180) / camStuff["res"][1])
-        point = np.array([camStuff["f"] * tan(alpha), camStuff["f"] * tan(beta), camStuff["f"]])
-        points.append(point)
-    points = np.array(points)
-    points = translate(t[0], t[1], t[2], points)
-    points = rotate(R[0], R[1], R[2], points)
-    return points
-
-
-def ThreeDPointsToPixels(camStuff, points, R, t):
-    """
-    
-    for x,y in img1:
-        x,y,z -> x1,y1,z1
-
-    """
-    pixels = []
-
-    points = urotate(R[0], R[1], R[2], points)
-    points = translate(t[0], t[1], t[2], points)
+def cameraCoords2Real(camStuff,points):
+    #if points.shape[1] != 2:
+    #    return
+    xAngleRange = np.arange(-camStuff["view"][0]/2,camStuff["view"][0]/2,
+                    camStuff["view"][0]/camStuff["res"][0])
+    yAngleRange = np.arange(-camStuff["view"][1]/2,camStuff["view"][1]/2,
+                    camStuff["view"][1]/camStuff["res"][1])
+    xAngleRange = xAngleRange * (3.1415/180)
+    yAngleRange = yAngleRange * (3.1415/180)
+    data = list()
     for point in points:
-        alpha = atan(point[0] / camStuff["f"])
-        beta = atan(point[1] / camStuff["f"])
-        x = alpha * camStuff["res"][0] / (camStuff["view"][0] * (pi / 180)) + camStuff["res"][0]/2
-        y = beta * camStuff["res"][1] / (camStuff["view"][1] * (pi / 180)) + camStuff["res"][1]/2
-        pixels.append((x, y))
-    return np.array(pixels)
+        #print(round(point[0]),round(point[1]))
+        data.append([
+                camStuff["f"]*tan(xAngleRange[int(round(point[0]))]),
+                camStuff["f"]*tan(yAngleRange[int(round(point[1]))]),
+                -camStuff["f"]
+                ])
+    data = np.array(data)
+    return data
+
+def ThreeDPointToPixel(R,t, camStuff, points):
+    """
+    points (n,3)
+    T (1,3)
+    R (3,3)
+    for x,y in img1:
+        x,y,z -> x1,y1,z1
+
+    """
+    print(R.shape,t.shape,points.shape)
+    newCoords = np.matmul(R,(-t+points).T).T
+
+    return newCoords
+
 
 
 c = camera2canvas(camDict)
 
-
-def calMatrices(pos1, pos2):
+def calMatrices(pos1,pos2):
     pos1 = np.array(pos1)
     pos2 = np.array(pos2)
-    diff = pos1 - pos2
-    t = np.array(diff[0], diff[1], diff[2])
-    R = rotateMatrix(diff[3], diff[4], diff[5])
+    diff = pos1-pos2
+    diff2 = pos1+pos2 - pi
+    t = np.array([float(diff[0]), float(diff[1]), float(diff[2])])
+    R = rotateMatrix(diff2[3], diff2[4], diff2[5])
     return R, t
 
 
+
 # p11 = makeAxis(scale=10)
-# p1 = rotate(3.14/4,3.14/3,3.14/3.666,p1)
+# #p1 = rotate(3.14/4,3.14/3,3.14/3.666,p1)
 
 # m1 = makeAxis(scale=5)
 # m1 = translate(p1[0],p1[1],p1[2],m1)
 # m1 = rotate(p1[3],p1[4],p1[5],m1)
 # c1 = translate(p1[0],p1[1],p1[2],c)
 # c1 = rotate(p1[3],p1[4],p1[5],c1)
-#
-#
+
+
 # m2 = makeAxis(scale=5)
 # m2 = translate(p2[0],p2[1],p2[2],m2)
 # m2 = rotate(p2[3],p2[4],p2[5],m2)
@@ -260,43 +282,37 @@ def calMatrices(pos1, pos2):
 # c2 = rotate(p2[3],p2[4],p2[5],c2)
 
 
-R = np.array([1.2, 2.6, 3.1])
-# R = np.array([3.1415,3.1415,3.1415])
-t = np.array([2, 4, 8])
-#
-a = np.array([
-    (200, 400),
-    (500, 300),
-    (69, 69)
-])
-#
-# b = np.array([
-#     np.array([1, 2, 3]),
-#     np.array([4.20, 6.9, 0.0]),
-#     np.array([1, 1, 1])
-# ])
-#
-# aa = rotate(R[0], R[1], R[2], b)
-# print(aa)
-# bb = rotate(-R[0], -R[1], -R[2], aa)
-# print(bb)
-dd = ThreeDPixelsToPoints(camStuff=camDict, pixels=a, R=R, t=t)
-print(dd)
-ee = ThreeDPointsToPixels(camStuff=camDict, points=dd, R=(-1 * R), t=(-1 * t))
-print(ee)
+#draw(objects=[p11,m1,m2,c1,c2],axis=False)
 
-# draw(objects=[p11,m1,m2,c1,c2],axis=False)
+R1,t1 = calMatrices(p1,p2)
+R2,t2 = calMatrices(p2,p1)
 
-#
-# lol = rotateMatrix(0, 0, pi/2)
-# lol2 = np.matmul(lol, np.array([1, 0, 0]))
-# lol3 = np.matmul(np.identity(3), np.array([1, 0, 0]))
-# print(lol2)
-# print(lol3)
+# g1 = ThreeDPointToPixel(R1,t1,camDict,c1)
 
-# a = 1.1
-# b = 2.3
-# c = 3.1
-#
-# lol = np.matmul(rotateMatrix(a, b, c), ultaRotateMatrix(-1*a, -1*b, -1*c))
-# print(lol)
+# g2 = ThreeDPointToPixel(R2,t2,camDict,c2)
+
+# draw(objects=[p11,m1,m2,c1,c2,g1,g2],axis=False)
+
+E = makeEsentialMatrix(R=R1, t=t1)
+
+print(cp1[0][1],cp2[0][1])
+
+arP1 = np.array(cameraCoords2Real(camDict,[cp1[0][1]]))
+
+arP1 = rotate(p1[3],p1[3],p1[5],arP1)
+arP1 = translate(p1[0],p1[1],p1[2],arP1)
+
+
+arP2 = np.array(cameraCoords2Real(camDict,[cp2[0][1]]))
+arP2 = rotate(p2[3],p2[3],p2[5],arP2)
+arP2 = translate(p2[0],p2[1],p2[2],arP2)
+
+print(arP1.shape,arP2.shape)
+
+
+
+
+diff = np.matmul(np.matmul(arP1,E),arP2.T)
+print(E,arP1,arP2)
+print(diff)
+
